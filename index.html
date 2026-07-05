@@ -266,13 +266,7 @@
       display:grid;
       gap:16px;
     }
-    .exam-nav-shell{
-      background:#fff;
-      border:1px solid var(--border);
-      border-radius:16px;
-      box-shadow:var(--shadow);
-      overflow:hidden;
-    }
+    .exam-nav-shell{background:#fff;border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow);overflow:hidden;}
     .exam-nav-shell > summary{
       list-style:none;
       cursor:pointer;
@@ -287,27 +281,10 @@
       border-bottom:1px solid var(--border);
     }
     .exam-nav-shell > summary::-webkit-details-marker{display:none}
-    .exam-nav-shell .exam-nav-content{
-      padding:14px 16px 16px;
-    }
-    .exam-nav-mini{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-      align-items:center;
-      color:var(--muted);
-      font-size:.8rem;
-      margin-top:6px;
-    }
-    .exam-nav-top-actions{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-      margin-top:10px;
-    }
-    .exam-nav-top-actions .btn{
-      padding:9px 12px;
-    }
+    .exam-nav-shell .exam-nav-content{padding:10px 12px 12px;}
+    .exam-nav-mini{display:flex;gap:6px;flex-wrap:wrap;align-items:center;color:var(--muted);font-size:.72rem;margin-top:4px;}
+    .exam-nav-top-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+    .exam-nav-top-actions .btn{padding:7px 10px;font-size:.86rem;}
     .sb-layout{
       display:grid;
       grid-template-columns:1fr 1.1fr;
@@ -322,36 +299,57 @@
       margin-bottom:12px;
     }
 
-    .mock-overlay{
-      position:fixed;inset:0;background:#eef2ff;z-index:9998;overflow:auto;
-      display:flex;align-items:center;justify-content:center;padding:3vh 3vw;
-    }
-    .mock-shell{
-      width:min(90vw,1450px);
-      height:min(90vh,980px);
-      background:#f3f4f6;
-      border-radius:18px;
-      box-shadow:0 25px 80px rgba(15,23,42,.18);
-      overflow:auto;
-      border:1px solid #d1d5db;
-      display:flex;
-      flex-direction:column;
-    }
+    .mock-overlay{position:fixed;inset:0;background:#08111f;z-index:9998;overflow:auto;display:flex;align-items:center;justify-content:center;padding:0;}
+    .mock-shell{width:100vw;height:100vh;background:#f5f7fb;border-radius:0;box-shadow:none;overflow:auto;border:none;display:flex;flex-direction:column;}
     .mock-topbar{
-      background:#111827;
-      color:#fff;
-      padding:16px 20px;
-      display:flex;
-      justify-content:space-between;
-      gap:12px;
-      flex-wrap:wrap;
+      background:#ffffff;
+      color:#111827;
+      padding:12px 22px;
+      display:grid;
+      grid-template-columns:minmax(260px,1fr) auto auto;
+      gap:18px;
       align-items:center;
       position:sticky;
       top:0;
-      z-index:2;
+      z-index:8;
+      border-bottom:1px solid #d8dee9;
+      box-shadow:0 8px 22px rgba(15,23,42,.08);
     }
-    .mock-topbar h2{margin:4px 0 0;font-size:1.1rem}
-    .mock-body{max-width:1180px;margin:0 auto;padding:18px}
+    .mock-topbar h2{margin:2px 0 0;font-size:1rem;line-height:1.35;color:#111827;}
+    .exam-brandline{display:flex;align-items:center;gap:14px;min-width:0;}
+    .exam-logo{width:56px;height:56px;border-radius:14px;object-fit:cover;border:1px solid #e5e7eb;box-shadow:0 8px 18px rgba(15,23,42,.12);}
+    .exam-kicker{font-size:.72rem;letter-spacing:1.7px;text-transform:uppercase;color:#64748b;font-weight:900;}
+    .exam-meta-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end;}
+    .exam-pill{
+      display:inline-flex;
+      align-items:center;
+      gap:7px;
+      min-height:38px;
+      padding:8px 12px;
+      border-radius:10px;
+      background:#f8fafc;
+      border:1px solid #e2e8f0;
+      color:#334155;
+      font-weight:800;
+      font-size:.86rem;
+      white-space:nowrap;
+    }
+    .exam-progress{
+      width:180px;
+      height:8px;
+      overflow:hidden;
+      border-radius:999px;
+      background:#e2e8f0;
+    }
+    .exam-progress > span{
+      display:block;
+      height:100%;
+      width:0%;
+      border-radius:999px;
+      background:linear-gradient(90deg,#f59e0b,#2563eb);
+      transition:width .2s ease;
+    }
+    .mock-body{max-width:none;margin:0 auto;padding:0;width:100%;flex:1 1 auto;}
     .mock-paper{margin-bottom:14px}
     .question-card h3{margin:0 0 14px;line-height:1.45}
     .empty{padding:16px;border:1px dashed #d9e2ef;border-radius:14px;background:#fbfdff;color:#5d6e83}
@@ -413,47 +411,41 @@
     }
 
     .exam-shell{
-      gap:12px;
+      gap:18px;
+      width:min(1180px,100%);
+      margin:0 auto;
+      padding:22px 22px 118px;
     }
     .exam-nav-shell{
-      border-radius:4px;
-      border:1px solid #cbd5e1;
-      box-shadow:none;
-    }
-    .question-card.exam-question{
-      border-radius:4px;
-      border:1px solid #cbd5e1;
-      box-shadow:none;
-      padding:0;
+      border-radius:14px;
+      border:1px solid #d8dee9;
+      box-shadow:0 12px 30px rgba(15,23,42,.08);
       overflow:hidden;
     }
-    .exam-question-head{
-      display:flex;
-      justify-content:space-between;
-      gap:12px;
-      align-items:flex-start;
-      padding:14px 18px;
-      border-bottom:1px solid #cbd5e1;
-      background:#f8fafc;
+    .question-card.exam-question{
+      border-radius:18px;
+      border:1px solid #d8dee9;
+      box-shadow:0 18px 46px rgba(15,23,42,.10);
+      padding:0;
+      overflow:hidden;
+      background:#fff;
     }
+    .exam-question-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:14px 18px;border-bottom:1px solid #e2e8f0;background:linear-gradient(180deg,#ffffff,#f8fafc);}
     .exam-question-main{
       color:#111827;
-      padding:16px 18px 4px;
-      font-size:1.02rem;
+      padding:18px 22px 6px;
+      font-size:1.13rem;
       font-weight:800;
-      line-height:1.55;
+      line-height:1.5;
       white-space:pre-wrap;
       word-break:break-word;
       tab-size:4;
       background:transparent !important;
     }
-    .exam-question-body{
-      padding:18px;
-      background:#fff;
-    }
+    .exam-question-body{padding:18px 22px 22px;background:#fff;}
     .question-text-block{
       color:#111827;
-      font-size:1rem;
+      font-size:1.03rem;
       line-height:1.65;
       font-weight:400;
       white-space:pre-wrap;
@@ -465,9 +457,37 @@
       color:#111;
     }
     .exam-actions{
-      padding-top:14px;
-      border-top:1px solid #e5e7eb;
+      position:fixed;
+      left:0;
+      right:0;
+      bottom:0;
+      z-index:9;
+      display:grid !important;
+      grid-template-columns:1fr auto auto auto auto;
+      align-items:center;
+      gap:10px;
+      min-height:82px;
+      padding:14px 28px;
+      border-top:1px solid #263244;
+      background:#111827;
+      box-shadow:0 -16px 34px rgba(15,23,42,.22);
     }
+    .exam-actions .btn{min-width:116px;border-radius:10px;}
+    .exam-actions::before{
+      content:"Vinayak ProEdu Mock Exam";
+      color:#cbd5e1;
+      font-weight:800;
+      justify-self:start;
+    }
+    .option{
+      border-radius:12px;
+      border-color:#d8dee9;
+      padding:14px 16px;
+      background:#fff;
+    }
+    .option:hover{background:#f8fafc;border-color:#c4cedd}
+    .option input{accent-color:#2563eb;}
+    .feedback{display:none;}
 
     @media (max-width: 980px){
       .wrap{grid-template-columns:1fr}
@@ -497,21 +517,11 @@
       transition:width .2s ease;
     }
     .nav-arrow-row{display:flex;justify-content:center}
-    .nav-arrow{
-      width:46px;
-      height:38px;
-      padding:0;
-      border-radius:999px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      font-size:1.1rem;
-      line-height:1;
-    }
+    .nav-arrow{width:38px;height:32px;padding:0;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;font-size:.95rem;line-height:1;}
     .nav-panel{display:none}
     .nav-panel.open{display:block}
-    .nav-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
-    .nav-btn{border:1px solid #dbe4f0;background:#eef4ff;padding:10px 0;border-radius:10px;font-weight:800;cursor:pointer}
+    .nav-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+    .nav-btn{border:1px solid #dbe4f0;background:#eef4ff;padding:7px 0;border-radius:10px;font-weight:800;cursor:pointer;font-size:.84rem;}
     .nav-btn.answered{background:#d1fae5;border-color:#a7f3d0}
     .nav-btn.review{background:#fef3c7;border-color:#f59e0b}
     .nav-btn.current{outline:2px solid #1d4ed8;background:#dbeafe}
@@ -555,6 +565,14 @@
       pointer-events:none;
       user-select:none;
       white-space:nowrap;
+    }
+    @media (max-width: 900px){
+      .mock-topbar{grid-template-columns:1fr;align-items:start;}
+      .exam-meta-bar{justify-content:flex-start;}
+      .exam-actions{grid-template-columns:1fr 1fr;position:sticky;}
+      .exam-actions::before{grid-column:1 / -1;}
+      .exam-actions .btn{min-width:0;width:100%;}
+      .exam-shell{padding:16px 14px 24px;}
     }
     .timer.warning{background:#fff7ed;color:#c2410c;border:1px solid #fdba74;box-shadow:0 0 0 4px rgba(249,115,22,.10);}
     .timer.critical{background:#fecaca;color:#7f1d1d;border:1px solid #f87171;box-shadow:0 0 0 4px rgba(239,68,68,.10);}
@@ -606,7 +624,6 @@
         <input id="authPassword" type="password" placeholder="••••••••" autocomplete="current-password" />
         <div class="btn-row">
           <button class="btn btn-primary" id="loginBtn">Login</button>
-          <button class="btn btn-ghost" id="signupBtn">Create account</button>
         </div>
         <div id="authStatus" class="auth-status"></div>
         <div class="auth-tip">Enable Email/Password sign-in in Firebase Authentication.</div>
@@ -623,7 +640,6 @@
       </div>
       <div class="btn-row">
         <button class="btn btn-ghost" id="sidebarToggleBtn" type="button">☰ Menu</button>
-        <button class="btn btn-ghost" id="refreshBtn">Refresh</button>
         <button class="btn btn-gold" id="logoutBtn">Logout</button>
       </div>
     </div>
@@ -709,6 +725,19 @@
                 <div>
                   <label>Total Marks</label>
                   <input id="paperMarks" type="number" value="100">
+                </div>
+              </div>
+              <label style="display:flex;align-items:center;gap:10px;text-transform:none;letter-spacing:0;font-size:.92rem;font-weight:700;color:var(--navy);margin:0 0 12px;">
+                <input id="paperLocked" type="checkbox" style="width:auto;margin:0;" />
+                Lock paper for students
+              </label>
+              <div class="row">
+                <div>
+                  <label>Allowed Attempts</label>
+                  <input id="paperAttempts" type="number" min="1" value="1" placeholder="1">
+                </div>
+                <div style="display:flex;align-items:end;padding-bottom:12px;">
+                  <div class="small">Admin controls how many times a student can start this paper.</div>
                 </div>
               </div>
               <label>Section Layout</label>
@@ -816,14 +845,21 @@
   <div id="mockOverlay" class="mock-overlay hidden">
     <div class="mock-shell">
     <div class="mock-topbar">
-      <div>
-        <div style="font-size:.75rem;letter-spacing:2px;text-transform:uppercase;color:#dbe8ff;font-weight:800">Mock Paper</div>
-        <h2 id="overlayTitle">Paper</h2>
+      <div class="exam-brandline">
+        <img class="exam-logo" src="https://pasteimg.com/images/2026/03/31/WhatsApp-Image-2026-03-19-at-6.49.19-PM.jpg" alt="Vinayak ProEdu">
+        <div>
+          <div class="exam-kicker">Vinayak ProEdu Mock Paper</div>
+          <h2 id="overlayTitle">Paper</h2>
+        </div>
       </div>
-      <div class="timer" id="overlayTimer">00:00</div>
-      <div id="timerWarning" class="small" style="display:none;color:#92400e;background:#fef3c7;border:1px solid #f3d18b;padding:8px 10px;border-radius:10px;">15 minutes left</div>
-      <div class="btn-row">
-        <button class="btn btn-ghost" id="closeMockBtn">Close</button>
+      <div class="exam-meta-bar">
+        <span class="exam-pill" id="examQuestionPill">Question 1 of 1</span>
+        <span class="exam-pill" id="examMarksPill">0 marks</span>
+        <span class="exam-pill">Time <strong class="timer" id="overlayTimer">00:00</strong></span>
+        <div id="timerWarning" class="small" style="display:none;color:#92400e;background:#fef3c7;border:1px solid #f3d18b;padding:8px 10px;border-radius:10px;">15 minutes left</div>
+      </div>
+      <div class="exam-meta-bar">
+        <span class="exam-pill"><span id="examProgressLabel">0% complete</span><span class="exam-progress"><span id="examProgressFill"></span></span></span>
         <button class="btn btn-gold" id="submitMockBtn">Submit</button>
       </div>
     </div>
@@ -862,6 +898,7 @@
     reviewed: {},
     examActive: false,
     examLocked: false,
+    examProtectionArmed: false,
     lockReason: '',
     remaining: 0,
     timerEndAt: 0,
@@ -903,6 +940,8 @@
     paperLevel: document.getElementById('paperLevel'),
     paperTime: document.getElementById('paperTime'),
     paperMarks: document.getElementById('paperMarks'),
+    paperLocked: document.getElementById('paperLocked'),
+    paperAttempts: document.getElementById('paperAttempts'),
     paperSections: document.getElementById('paperSections'),
     paperStatus: document.getElementById('paperStatus'),
     questionPaper: document.getElementById('questionPaper'),
@@ -930,6 +969,10 @@
     overlayTitle: document.getElementById('overlayTitle'),
     overlayTimer: document.getElementById('overlayTimer'),
     overlayBody: document.getElementById('overlayBody'),
+    examQuestionPill: document.getElementById('examQuestionPill'),
+    examMarksPill: document.getElementById('examMarksPill'),
+    examProgressLabel: document.getElementById('examProgressLabel'),
+    examProgressFill: document.getElementById('examProgressFill'),
     savePaperBtn: document.getElementById('savePaperBtn'),
     clearPaperBtn: document.getElementById('clearPaperBtn'),
     saveQuestionBtn: document.getElementById('saveQuestionBtn'),
@@ -1383,16 +1426,16 @@
 
     return `
       <div class="sb-layout">
+        <div class="sb-exhibit">
+          <h4 class="sb-title">Exhibit</h4>
+          ${exhibitHtml}
+        </div>
         <div class="sb-panel">
           <h4 class="sb-title">Answer Area</h4>
           ${markingScheme ? `<div class="sb-scheme"><strong>Marking scheme:</strong> ${esc(markingScheme)}</div>` : ''}
           <div class="sb-custom-html">
             ${tmp.innerHTML}
           </div>
-        </div>
-        <div class="sb-exhibit">
-          <h4 class="sb-title">Exhibit</h4>
-          ${exhibitHtml}
         </div>
       </div>
     `;
@@ -1415,6 +1458,11 @@
 
   function getQuestionsForPaper(paperId) {
     return state.questions.filter(q => String(q.paperId) === String(paperId));
+  }
+
+  function hasStudentAttemptedPaper(paperId) {
+    if (!state.user) return false;
+    return state.attempts.some(a => String(a.paperId) === String(paperId) && String(a.userId) === String(state.user.uid));
   }
 
   function questionHasAnswer(q) {
@@ -1467,16 +1515,18 @@
 
   function paperSummaryCard(p) {
     const qCount = getQuestionsForPaper(p.id).length;
-    let actions = `<button class="btn btn-primary" onclick="startMock('${p.id}')">Start Mock</button>`;
+    let actions = p.locked
+      ? `<button class="btn btn-ghost" onclick="startMock('${p.id}')">Locked</button>`
+      : `<button class="btn btn-primary" onclick="startMock('${p.id}')">Start Mock</button>`;
     if (state.role === 'admin') {
-      actions += ` <button class="btn btn-ghost" onclick="editPaper('${p.id}')">Edit</button>`;
+      actions += ` <button class="btn btn-ghost" onclick="editPaper('${p.id}')">Edit</button> <button class="btn btn-danger" onclick="deletePaper('${p.id}')">Delete</button>`;
     }
     return `
       <div class="item">
-        <div class="badge">${esc(p.code || '')}</div>
+        <div class="badge">${esc(p.code || '')}${p.locked ? ' · Locked' : ''}</div>
         <h3>${esc(p.title || 'Mock Paper')}</h3>
         <div class="small">${esc(p.level || '')} · ${Number(p.timeLimit || 0)} min · ${Number(p.totalMarks || 0)} marks</div>
-        <div class="small" style="margin-top:4px;">Questions: ${qCount}</div>
+        <div class="small" style="margin-top:4px;">Attempts: ${Number(p.attemptLimit || 1)} · Questions: ${qCount}</div>
         <div class="btn-row" style="margin-top:10px;">${actions}</div>
       </div>
     `;
@@ -1521,8 +1571,8 @@
         <div class="question-list-item">
           <div class="badge">${esc(q.paperCode || '')}</div>
           <div class="meta">${esc(q.paperTitle || '')} · Section ${esc(q.section || '-')} · ${esc(qType)}${imageMark}${schemeMark}</div>
-          ${q.mainQuestion ? `<div class="exam-question-main" style="margin:10px 0 4px;padding:0;font-size:.92rem;background:transparent;">${renderPastedText(q.mainQuestion)}</div>` : ''}
-          <div class="qtext question-text-block">${renderPastedText(q.question || '')}</div>
+          ${q.question ? `<div class="qtext question-text-block">${renderPastedText(q.question || '')}</div>` : ''}
+          ${q.mainQuestion ? `<div class="exam-question-main" style="margin:8px 0 4px;padding:0;font-size:.92rem;background:transparent;">${renderPastedText(q.mainQuestion)}</div>` : ''}
           ${q.imageUrl ? `<div class="small">Image attached</div>` : ''}
           <div class="qactions">
             <button class="btn btn-ghost" type="button" onclick="editQuestion('${q.id}')">Edit</button>
@@ -1762,6 +1812,7 @@ Year End || yesno || Yes,No || Yes || 1 ||"></textarea>
       const level = getVal('paperLevel');
       const timeLimit = Number(getVal('paperTime') || 0);
       const totalMarks = Number(getVal('paperMarks') || 0);
+      const locked = !!el.paperLocked?.checked;
       const sectionsText = getVal('paperSections');
 
       if (!code || !title) throw new Error('Paper code and title are required.');
@@ -1773,6 +1824,8 @@ Year End || yesno || Yes,No || Yes || 1 ||"></textarea>
         level,
         timeLimit,
         totalMarks,
+        locked,
+        attemptLimit: Math.max(1, Number(getVal('paperAttempts') || 1)),
         sections,
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       };
@@ -1789,6 +1842,7 @@ Year End || yesno || Yes,No || Yes || 1 ||"></textarea>
       state.editingPaperId = null;
       state.paperMode = 'new';
       if (el.savePaperBtn) el.savePaperBtn.textContent = 'Save Paper';
+      if (el.paperLocked) el.paperLocked.checked = false;
       setStatus(el.paperStatus, wasEditing ? 'Paper updated ✓' : 'Paper saved ✓');
       await refreshAll();
     } catch (err) {
@@ -1818,6 +1872,8 @@ Year End || yesno || Yes,No || Yes || 1 ||"></textarea>
     el.paperLevel.value = p.level || 'Applied Skills';
     el.paperTime.value = p.timeLimit || 90;
     el.paperMarks.value = p.totalMarks || 100;
+    if (el.paperLocked) el.paperLocked.checked = !!p.locked;
+    if (el.paperAttempts) el.paperAttempts.value = Number(p.attemptLimit || 1);
     el.paperSections.value = Array.isArray(p.sections) ? p.sections.join('\n') : '';
     if (el.savePaperBtn) el.savePaperBtn.textContent = 'Update Paper';
     showView('adminView');
@@ -2130,6 +2186,18 @@ Year End || yesno || Yes,No || Yes || 1 ||"></textarea>
 
     const reviewCount = document.getElementById('navReviewCount');
     if (reviewCount) reviewCount.textContent = String(state.activeQuestions.filter(q => state.reviewed[q.id]).length);
+    updateExamHeaderStats();
+  }
+
+  function updateExamHeaderStats() {
+    const total = state.activeQuestions.length || 0;
+    const q = state.activeQuestions[state.currentIndex];
+    const answered = state.activeQuestions.filter(questionHasAnswer).length;
+    const progress = total ? Math.round((answered / total) * 100) : 0;
+    if (el.examQuestionPill) el.examQuestionPill.textContent = `Question ${Math.min(state.currentIndex + 1, total || 1)} of ${total || 1}`;
+    if (el.examMarksPill) el.examMarksPill.textContent = `${Number(q?.marks || 0)} marks`;
+    if (el.examProgressLabel) el.examProgressLabel.textContent = `${progress}% complete`;
+    if (el.examProgressFill) el.examProgressFill.style.width = `${progress}%`;
   }
 
   function getDisplayMainQuestion(q) {
@@ -2139,68 +2207,16 @@ Year End || yesno || Yes,No || Yes || 1 ||"></textarea>
   function renderQuestionBody(q) {
     const selected = state.selected[q.id];
     const type = q.type || 'mcq';
-    const questionText = q.question && type !== 'sectionb'
-      ? `<div class="question-text-block">${renderPastedText(q.question)}</div>`
-      : '';
     const mediaUrls = Array.isArray(q.imageUrls) && q.imageUrls.length ? q.imageUrls : (q.imageUrl ? [q.imageUrl] : []);
-    const media = mediaUrls.length ? `
-      <div class="question-image">
-        ${mediaUrls.map((url, idx) => `<img src="${esc(url)}" alt="${esc(q.imageAlt || q.question || 'Question image')} ${idx + 1}" style="${idx > 0 ? 'margin-top:10px;' : ''}">`).join('')}
-      </div>
-    ` : '';
+    const media = mediaUrls.length ? `<div class="question-image">${mediaUrls.map((url, idx)=>`<img src="${esc(url)}" alt="${esc(q.imageAlt || q.question || 'Question image')} ${idx + 1}" style="${idx > 0 ? 'margin-top:10px;' : ''}">`).join('')}</div>` : '';
 
-    if (type === 'mcq' || type === 'screenshot') {
-      const options = Array.isArray(q.options) ? q.options : [];
-      return `
-        ${questionText}
-        ${media}
-        <div class="option-list">
-          ${options.map((opt, idx) => `
-            <label class="option">
-              <input type="radio" name="answer" value="${idx}" ${String(selected) === String(idx) ? 'checked' : ''}>
-              <span>${esc(opt)}</span>
-            </label>
-          `).join('')}
-        </div>
-      `;
-    }
-
-    if (type === 'multi') {
-      const options = Array.isArray(q.options) ? q.options : [];
-      const picked = Array.isArray(selected) ? selected : [];
-      return `
-        ${questionText}
-        ${media}
-        <div class="option-list">
-          ${options.map((opt, idx) => `
-            <label class="option">
-              <input type="checkbox" class="multiBox" value="${idx}" ${picked.includes(idx) ? 'checked' : ''}>
-              <span>${esc(opt)}</span>
-            </label>
-          `).join('')}
-        </div>
-      `;
-    }
-
-    if (type === 'fill') {
-      return `${questionText}${media}${renderFillInline(q, selected)}`;
-    }
-
-    if (type === 'sectionb') {
-      return `${renderSectionBStudentTable(q, selected)}`;
-    }
-
-    if (type === 'dropdown') {
-      return `${questionText}${media}${renderDropdownInline(q, selected)}`;
-    }
-
-    return `
-      ${questionText}
-      ${media}
-      <textarea id="freeAnswer" placeholder="Type your answer here">${esc(selected || '')}</textarea>
-    `;
+    if(type === 'mcq' || type === 'screenshot'){ const options = Array.isArray(q.options) ? q.options : []; return `${media}<div class="option-list">${options.map((opt, idx)=>`<label class="option"><input type="radio" name="answer" value="${idx}" ${String(selected) === String(idx) ? 'checked' : ''}><span>${esc(opt)}</span></label>`).join('')}</div>`; }
+    if(type === 'multi'){ const options = Array.isArray(q.options) ? q.options : []; const picked = Array.isArray(selected) ? selected : []; return `${media}<div class="option-list">${options.map((opt, idx)=>`<label class="option"><input type="checkbox" class="multiBox" value="${idx}" ${picked.includes(idx) ? 'checked' : ''}><span>${esc(opt)}</span></label>`).join('')}</div>`; }
+    if(type === 'fill') return `${media}${renderFillInline(q, selected)}`;
+    if(type === 'sectionb') return `${renderSectionBHtmlBlock(q, selected)}`;
+    if(type === 'dropdown') return `${media}${renderDropdownInline(q, selected)}`;
+    return `${media}<textarea id="freeAnswer" placeholder="Type your answer here">${esc(selected || '')}</textarea>`;
   }
-
 
   function wireQuestionInputs() {
     const q = state.activeQuestions[state.currentIndex];
@@ -2267,19 +2283,9 @@ Year End || yesno || Yes,No || Yes || 1 ||"></textarea>
   }
 
   function renderMockQuestion() {
-    if (!state.examActive) return;
-
-    if (state.examLocked) {
-      el.overlayBody.innerHTML = `
-        <div class="lock-screen">
-          <h3>Exam Locked</h3>
-          <p>${esc(state.lockReason || 'The exam lost focus.')}</p>
-          <p>The attempt is frozen because the browser tab or window changed.</p>
-          <div class="btn-row" style="justify-content:center;margin-top:14px;">
-            <button class="btn btn-gold" onclick="submitMock()">Submit Now</button>
-          </div>
-        </div>
-      `;
+    if(!state.examActive) return;
+    if(state.examLocked){
+      el.overlayBody.innerHTML = `<div class="lock-screen"><h3>Exam Locked</h3><p>${esc(state.lockReason || 'The exam lost focus.')}</p><p>The attempt is frozen because the browser tab or window changed.</p><div class="btn-row" style="justify-content:center;margin-top:14px;"><button class="btn btn-gold" onclick="submitMock()">Submit Now</button></div></div>`;
       return;
     }
 
@@ -2293,6 +2299,8 @@ Year End || yesno || Yes,No || Yes || 1 ||"></textarea>
     const body = renderQuestionBody(q);
     const reviewed = !!state.reviewed[q.id];
     const mainQuestion = getDisplayMainQuestion(q);
+    const normalQuestion = String(q.question || '').trim();
+    updateExamHeaderStats();
 
     el.overlayBody.innerHTML = `
       <div class="exam-shell">
@@ -2300,14 +2308,14 @@ Year End || yesno || Yes,No || Yes || 1 ||"></textarea>
         <div class="question-card exam-question">
           <div class="exam-question-head">
             <div>
-              <div class="badge">${esc(q.paperCode || '')}</div>
-              <h3 style="margin:0 0 8px;">${esc(q.paperTitle || '')}</h3>
-              <div class="small">Section ${esc(q.section || '-')} · ${esc(q.type || 'mcq')} · ${Number(q.marks || 0)} marks</div>
+              <div class="small" style="font-weight:800;color:#111827;">Section ${esc(q.section || '-')}</div>
             </div>
             <div class="small">Question ${state.currentIndex + 1} of ${state.activeQuestions.length}</div>
           </div>
 
+          ${normalQuestion ? `<div class="question-text-block" style="padding:12px 14px 4px;margin:0;">${renderPastedText(normalQuestion)}</div>` : ''}
           ${mainQuestion ? `<div class="exam-question-main">${renderPastedText(mainQuestion)}</div>` : ''}
+
           <div class="exam-question-body">
             <div class="question-shell">
               <div class="question-watermark">Vinayak ProEdu</div>
@@ -2325,7 +2333,6 @@ Year End || yesno || Yes,No || Yes || 1 ||"></textarea>
         </div>
       </div>
     `;
-
     wireQuestionInputs();
     updateNavigatorVisuals();
   }
@@ -2382,8 +2389,8 @@ Year End || yesno || Yes,No || Yes || 1 ||"></textarea>
               <div class="question-list-item ${d.correct ? 'result-card result-ok' : 'result-card result-bad'}">
                 <div class="badge">Q${idx + 1}</div>
                 <div class="meta">${esc(d.type)} · ${d.correct ? 'Correct' : 'Incorrect'} · Marks ${d.gained}/${d.marks}</div>
-                ${d.mainQuestion ? `<div class="exam-question-main" style="margin:10px 0 4px;padding:0;">${renderPastedText(d.mainQuestion)}</div>` : ''}
                 ${d.question ? `<div class="question-text-block">${renderPastedText(d.question)}</div>` : ''}
+                ${d.mainQuestion ? `<div class="exam-question-main" style="margin:10px 0 4px;padding:0;">${renderPastedText(d.mainQuestion)}</div>` : ''}
                 ${(Array.isArray(d.imageUrls) && d.imageUrls.length)
                   ? `<div class="question-image">${d.imageUrls.map((u, i) => `<img src="${esc(u)}" alt="${esc((d.imageAlt || d.question) + ' ' + (i + 1))}"${i > 0 ? ' style="margin-top:10px;"' : ''}>`).join('')}</div>`
                   : (d.imageUrl ? `<div class="question-image"><img src="${esc(d.imageUrl)}" alt="${esc(d.imageAlt || d.question)}"></div>` : '')}
@@ -2462,32 +2469,50 @@ Year End || yesno || Yes,No || Yes || 1 ||"></textarea>
   };
 
   function lockExam(reason) {
-    if (!state.examActive || state.examLocked) return;
+    if (!state.examActive || state.examLocked || !state.examProtectionArmed) return;
     state.examLocked = true;
     state.lockReason = reason || 'Focus changed';
     renderMockQuestion();
   }
 
   function enterFullscreen() {
-    // Intentionally disabled: exam opens in a centered 90% shell.
+    const root = document.documentElement;
+    const request = root.requestFullscreen || root.webkitRequestFullscreen || root.msRequestFullscreen;
+    if (!request) return;
+    try {
+      const result = request.call(root);
+      if (result && typeof result.catch === 'function') result.catch(() => {});
+    } catch (err) {}
   }
 
   function exitFullscreen() {
-    // Intentionally disabled.
+    const exit = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
+    if (!document.fullscreenElement || !exit) return;
+    try {
+      const result = exit.call(document);
+      if (result && typeof result.catch === 'function') result.catch(() => {});
+    } catch (err) {}
   }
 
-  window.startMock = async function(paperId) {
+  window.startMock = async function(paperId){
     const paper = state.papers.find(p => p.id === paperId);
     const questions = getQuestionsForPaper(paperId);
 
-    if (!paper) {
-      alert('Paper not found');
+    if (!paper) { alert('Paper not found'); return; }
+    if (paper.locked) { alert('This test is locked by the admin.'); return; }
+    if (!questions.length) { alert('No questions uploaded for this paper yet'); return; }
+
+    const usedAttempts = state.attempts.filter(a =>
+      String(a.paperId) === String(paperId) &&
+      String(a.userId) === String(state.user?.uid || '')
+    ).length;
+    const maxAttempts = Math.max(1, Number(paper.attemptLimit || 1));
+    if (usedAttempts >= maxAttempts) {
+      alert(`You have already used all ${maxAttempts} allowed attempt(s) for this paper.`);
       return;
     }
-    if (!questions.length) {
-      alert('No questions uploaded for this paper yet');
-      return;
-    }
+
+    if (!confirm('Start this test now? You can attempt it only as many times as allowed by the admin.')) return;
 
     state.activePaper = paper;
     state.activeQuestions = questions;
@@ -2496,6 +2521,7 @@ Year End || yesno || Yes,No || Yes || 1 ||"></textarea>
     state.reviewed = {};
     state.examActive = true;
     state.examLocked = false;
+    state.examProtectionArmed = false;
     state.lockReason = '';
     state.resultData = null;
     state.remaining = Number(paper.timeLimit || 90) * 60;
@@ -2507,16 +2533,21 @@ Year End || yesno || Yes,No || Yes || 1 ||"></textarea>
     el.overlayTitle.textContent = `${paper.code} — ${paper.title}`;
     el.mockOverlay.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
+    enterFullscreen();
+    setTimeout(() => {
+      if (state.examActive && !state.examLocked) state.examProtectionArmed = true;
+    }, 3000);
     renderMockQuestion();
     startTimer();
   };
 
-  function closeMock() {
+function closeMock() {
     el.mockOverlay.classList.add('hidden');
     document.body.style.overflow = '';
     clearInterval(state.timer);
     state.examActive = false;
     state.examLocked = false;
+    state.examProtectionArmed = false;
     state.lockReason = '';
     state.resultData = null;
     state.submitting = false;
@@ -2760,6 +2791,8 @@ Year End || yesno || Yes,No || Yes || 1 ||"></textarea>
     el.paperSections.value = '';
     el.paperTime.value = 90;
     el.paperMarks.value = 100;
+    if (el.paperLocked) el.paperLocked.checked = false;
+    if (el.paperAttempts) el.paperAttempts.value = 1;
     el.paperLevel.value = 'Applied Skills';
     state.editingPaperId = null;
     state.paperMode = 'new';
@@ -2793,16 +2826,16 @@ Year End || yesno || Yes,No || Yes || 1 ||"></textarea>
       }
     });
   }
-  el.closeMockBtn.addEventListener('click', closeMock);
+  if (el.closeMockBtn) el.closeMockBtn.addEventListener('click', closeMock);
   el.submitMockBtn.addEventListener('click', submitMock);
-  el.refreshBtn.addEventListener('click', refreshAll);
+  if (el.refreshBtn) el.refreshBtn.addEventListener('click', refreshAll);
   el.logoutBtn.addEventListener('click', () => auth.signOut());
   el.paperSearch.addEventListener('input', renderPapers);
   if (document.getElementById('sidebarToggleBtn')) {
     document.getElementById('sidebarToggleBtn').addEventListener('click', toggleSidebar);
   }
   el.loginBtn.addEventListener('click', login);
-  el.signupBtn.addEventListener('click', signup);
+  if (el.signupBtn) el.signupBtn.addEventListener('click', signup);
   el.authPassword.addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
   el.authEmail.addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
   el.addOptionBtn.addEventListener('click', () => addOptionRow(''));
