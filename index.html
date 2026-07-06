@@ -1360,7 +1360,7 @@
       }
       if (document.getElementById('sbRowsX')) {
         document.getElementById('sbRowsX').value = Array.isArray(q.sectionBRows)
-          ? q.sectionBRows.map(r => `${r.label || ''} || ${r.fieldType || 'text'} || ${(Array.isArray(r.options) ? r.options.join(',') : '')} || ${r.correct || ''} || ${Number(r.marks || 1)} || ${(Array.isArray(r.altAnswers) ? r.altAnswers.join(',') : '')}`).join('\n')
+          ? q.sectionBRows.map(r => serializeSectionBRow(r)).join('\n')
           : '';
       }
       if (document.getElementById('sbSchemeX')) {
@@ -1387,20 +1387,57 @@
     );
   }
 
+
+  function isSectionBChoiceType(fieldType) {
+    return ['dropdown', 'mcq', 'yesno', 'radio'].includes(String(fieldType || '').toLowerCase());
+  }
+
+  function serializeSectionBRow(row = {}) {
+    const label = row.label || '';
+    const fieldType = String(row.fieldType || 'text').toLowerCase();
+    const options = Array.isArray(row.options) ? row.options.join(',') : '';
+    const correct = row.correct ?? '';
+    const marks = Number(row.marks || 1);
+    const alt = Array.isArray(row.altAnswers) ? row.altAnswers.join(',') : '';
+    return `${label} || ${fieldType} || ${options} || ${correct} || ${marks} || ${alt}`;
+  }
+
   function parseSectionBRows(raw) {
     return parseLines(raw).map(line => {
       const parts = String(line || '').split('||').map(s => s.trim());
       const label = parts[0] || '';
       const fieldType = (parts[1] || 'text').toLowerCase();
-      const isChoice = ['dropdown', 'mcq', 'yesno', 'radio'].includes(fieldType);
+      const isChoice = isSectionBChoiceType(fieldType);
 
-      const options = isChoice && parts[2]
-        ? parts[2].split(/[,;]/).map(s => s.trim()).filter(Boolean)
-        : [];
+      let options = [];
+      let correct = '';
+      let marks = 1;
+      let altAnswers = [];
 
-      const correct = isChoice ? (parts[3] || '') : (parts[2] || '');
-      const marks = Number(parts[4] || 1);
-      const altAnswers = parts[5] ? parts[5].split(/[,|]/).map(s => normalizeText(s)).filter(Boolean) : [];
+      if (isChoice) {
+        options = parts[2] ? parts[2].split(/[,;]/).map(s => s.trim()).filter(Boolean) : [];
+        correct = parts[3] || '';
+        marks = Number(parts[4] || 1);
+        altAnswers = parts[5]
+          ? parts[5].split(/[,|]/).map(s => normalizeText(s)).filter(Boolean)
+          : [];
+      } else {
+        const hasExplicitBlankOptions = parts.length >= 4 && parts[2] === '';
+        if (hasExplicitBlankOptions) {
+          correct = parts[3] || '';
+          marks = Number(parts[4] || 1);
+          altAnswers = parts[5]
+            ? parts[5].split(/[,|]/).map(s => normalizeText(s)).filter(Boolean)
+            : [];
+        } else {
+          correct = parts[2] || '';
+          marks = Number(parts[3] || 1);
+          altAnswers = parts[4]
+            ? parts[4].split(/[,|]/).map(s => normalizeText(s)).filter(Boolean)
+            : [];
+        }
+      }
+
       return { label, fieldType, options, correct, marks, altAnswers };
     }).filter(r => r.label);
   }
