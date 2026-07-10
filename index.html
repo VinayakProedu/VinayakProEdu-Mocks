@@ -409,6 +409,7 @@
     .sb-custom-html .sb-block{
       margin-bottom:12px;
     }
+    .sb-table-title{font-weight:900;color:#111827;margin:0 0 10px;font-size:1.05rem;}
 
     .exam-shell{
       gap:18px;
@@ -1359,9 +1360,7 @@
         document.getElementById('sbImageUrlsX').value = urls.join('\n');
       }
       if (document.getElementById('sbRowsX')) {
-        document.getElementById('sbRowsX').value = Array.isArray(q.sectionBRows)
-          ? q.sectionBRows.map(r => serializeSectionBRow(r)).join('\n')
-          : '';
+        document.getElementById('sbRowsX').value = buildSectionBTextareaValue(q);
       }
       if (document.getElementById('sbSchemeX')) {
         document.getElementById('sbSchemeX').value = q.sectionBMarkingScheme || '';
@@ -1392,54 +1391,335 @@
     return ['dropdown', 'mcq', 'yesno', 'radio'].includes(String(fieldType || '').toLowerCase());
   }
 
-  function serializeSectionBRow(row = {}) {
-    const label = row.label || '';
+
+  function splitSectionBLine(line) {
+    const cleaned = String(line || '').trim();
+    if (!cleaned) return [];
+    return cleaned.includes('||')
+      ? cleaned.split('||').map(s => s.trim())
+      : cleaned.split('|').map(s => s.trim());
+  }
+
+  function normalizeSectionBKind(value) {
+    const v = normalizeText(value);
+    if (['row', 'entry', 'answer', 'field'].includes(v)) return 'row';
+    if (['fixed', 'static', 'display', 'label', 'value'].includes(v)) return 'fixed';
+    if (['text', 'heading', 'note', 'instruction', 'subheading'].includes(v)) return 'text';
+    if (['number', 'num', 'input', 'amount', 'currency'].includes(v)) return 'number';
+    if (['dropdown', 'select', 'choice'].includes(v)) return 'dropdown';
+    if (['mcq', 'radio'].includes(v)) return 'mcq';
+    if (['yesno', 'yes/no'].includes(v)) return 'yesno';
+    if (['total', 'sum'].includes(v)) return 'total';
+    return v || 'text';
+  }
+
+  function parseSectionBHeader(line) {
+    const cleaned = String(line || '').trim();
+    if (!cleaned) return null;
+
+    const typeMatch = cleaned.match(/^(?:type|layout)\s*=\s*(calc\s*table|statement\s*table|statement|cash\s*flow\s*table|cashflow\s*table)(?:\s*[\|]\s*(.*))?$/i);
+    if (typeMatch) {
+      const rawLayout = normalizeText(typeMatch[1]).replace(/\s+/g, '');
+      const layout = rawLayout.includes('calc') ? 'calcTable' : 'statementTable';
+      return { layout, title: String(typeMatch[2] || '').trim() };
+    }
+
+    const parts = splitSectionBLine(cleaned);
+    const key = normalizeText(parts[0]);
+
+    if (['calctable', 'calc table', 'statementtable', 'statement table', 'cashflowtable', 'cash flow table'].includes(key)) {
+      const layout = key.includes('calc') ? 'calcTable' : 'statementTable';
+      const title = parts.slice(1).join(' | ').trim();
+      return { layout, title };
+    }
+
+    if (['title', 'heading'].includes(key)) {
+      return { title: parts.slice(1).join(' | ').trim() };
+    }
+
+    return null;
+  }
+
+  
+  function coerceSectionBRow(row) {
+    if (row == null) return null;
+
+    if (typeof row === 'string') {
+      const trimmed = row.trim();
+      if (!trimmed) return null;
+      const header = parseSectionBHeader(trimmed);
+      if (header && (header.layout || header.title) && !/^(?:row|fixed|text|heading|label|total|grandtotal)\s*\|/i.test(trimmed)) {
+        return { __header: true, layout: header.layout || '', title: header.title || '' };
+      }
+      return parseSectionBRowLine(trimmed);
+    }
+
+    if (typeof row !== 'object') return null;
+
+    const clone = { ...row };
+    const candidate = String(
+      clone.raw ??
+      clone.value ??
+      clone.text ??
+      clone.title ??
+      clone.label ??
+      ''
+    ).trim();
+
+    if (candidate && /^(?:type|layout)\s*=|^(?:calcTable|calctable|statementTable|statementtable|cashflowtable|cash flow table)\b/i.test(candidate)) {
+      const header = parseSectionBHeader(candidate);
+      if (header) return { __header: true, layout: header.layout || '', title: header.title || '' };
+    }
+
+    if (candidate && /^(?:row|fixed|text|heading|label|total|grandtotal)\s*\|/i.test(candidate)) {
+      const parsed = parseSectionBRowLine(candidate);
+      if (parsed) return parsed;
+    }
+
+    if (typeof clone.label === 'string' && /(?:\||\brow\b|\btotal\b|\bgrandtotal\b)/i.test(clone.label) && !clone.fieldType) {
+      const parsed = parseSectionBRowLine(clone.label);
+      if (parsed) return parsed;
+    }
+
+    clone.label = String(clone.label || clone.text || clone.title || '').trim();
+    clone.fieldType = normalizeSectionBKind(clone.fieldType || clone.type || 'text');
+    clone.correct = String(clone.correct ?? clone.answer ?? '').trim();
+    clone.marks = Number(clone.marks || 0);
+    clone.options = Array.isArray(clone.options) ? clone.options : [];
+    clone.altAnswers = Array.isArray(clone.altAnswers) ? clone.altAnswers : [];
+    return clone;
+  }
+
+
+  function parseSectionBRowLine(line) {
+    let parts = splitSectionBLine(line);
+    if (!parts.length) return null;
+
+    const duplicatePrefix = () => {
+      while (parts.length > 1) {
+        const p0 = normalizeText(parts[0]);
+        const p1 = normalizeText(parts[1]);
+        if (p0 && p0 === p1 && ['row', 'fixed', 'text', 'heading', 'label', 'total', 'grandtotal'].includes(p0)) {
+          parts = parts.slice(1);
+          continue;
+        }
+        if (p0 === 'row' && ['row', 'fixed', 'text', 'heading', 'label', 'total', 'grandtotal'].includes(p1)) {
+          parts = parts.slice(1);
+          continue;
+        }
+        break;
+      }
+    };
+    duplicatePrefix();
+
+    let label = '';
+    let fieldType = 'text';
+    let options = [];
+    let correct = '';
+    let marks = 0;
+    let altAnswers = [];
+
+    const prefix = normalizeText(parts[0]);
+
+    const parseAlt = idx => {
+      const rawAlt = parts[idx];
+      return rawAlt
+        ? String(rawAlt).split(/[,|]/).map(s => normalizeText(s)).filter(Boolean)
+        : [];
+    };
+
+    const parseOptions = idx => {
+      const rawOptions = parts[idx];
+      return rawOptions
+        ? String(rawOptions).split(/[,;]/).map(s => s.trim()).filter(Boolean)
+        : [];
+    };
+
+    const asInt = value => {
+      const n = Number(String(value ?? '').trim());
+      return Number.isFinite(n) ? n : NaN;
+    };
+
+    const isNumericLike = value => numericComparable(value) !== null || /^-?\d[\d,]*(\.\d+)?$/.test(String(value ?? '').trim());
+
+    if (['row', 'fixed', 'text', 'heading', 'label', 'total', 'grandtotal'].includes(prefix)) {
+      if (prefix === 'row') {
+        label = parts[1] || '';
+        fieldType = normalizeSectionBKind(parts[2] || 'number');
+
+        if (['dropdown', 'mcq', 'yesno'].includes(fieldType)) {
+          options = parseOptions(3);
+          correct = parts[4] || '';
+          marks = asInt(parts[5]);
+          if (Number.isNaN(marks)) marks = 1;
+          altAnswers = parseAlt(6);
+        } else if (['fixed', 'text', 'heading', 'label'].includes(fieldType)) {
+          correct = parts[3] || parts[2] || '';
+          marks = 0;
+        } else if (fieldType === 'total') {
+          fieldType = 'number';
+          correct = parts[3] || parts[2] || '';
+          marks = asInt(parts[4]);
+          if (Number.isNaN(marks)) marks = 1;
+          altAnswers = parseAlt(5);
+        } else {
+          if (parts.length >= 5) {
+            correct = parts[3] || '';
+            marks = asInt(parts[4]);
+            altAnswers = parseAlt(5);
+          } else {
+            correct = parts[2] || '';
+            marks = asInt(parts[3]);
+            altAnswers = parseAlt(4);
+          }
+          if (Number.isNaN(marks)) marks = 1;
+        }
+      } else if (prefix === 'fixed') {
+        label = parts[1] || '';
+        fieldType = 'fixed';
+        correct = parts[2] || '';
+        marks = 0;
+      } else if (prefix === 'total' || prefix === 'grandtotal') {
+        fieldType = 'number';
+        const second = parts[1] || '';
+        const third = parts[2] || '';
+
+        if (!second || second === 'input' || second === 'blank' || second === 'answer') {
+          label = '';
+          correct = third || parts[1] || '';
+          marks = asInt(parts[3]);
+        } else if (isNumericLike(second) && (!third || isNumericLike(third))) {
+          label = '';
+          correct = second;
+          marks = asInt(third);
+        } else {
+          label = second;
+          correct = third || second;
+          marks = asInt(parts[3]);
+        }
+        if (Number.isNaN(marks)) marks = 0;
+        altAnswers = parseAlt(4);
+      } else {
+        fieldType = 'text';
+        label = parts.slice(1).join(' | ') || parts[0] || '';
+        correct = '';
+        marks = 0;
+      }
+    } else {
+      label = parts[0] || '';
+      fieldType = normalizeSectionBKind(parts[1] || 'text');
+
+      if (['dropdown', 'mcq', 'yesno'].includes(fieldType)) {
+        options = parseOptions(2);
+        correct = parts[3] || '';
+        marks = asInt(parts[4]);
+        if (Number.isNaN(marks)) marks = 1;
+        altAnswers = parseAlt(5);
+      } else if (['fixed', 'text', 'heading', 'label'].includes(fieldType)) {
+        correct = parts[2] || '';
+        marks = 0;
+      } else if (fieldType === 'total') {
+        fieldType = 'number';
+        correct = parts[2] || '';
+        marks = asInt(parts[3]);
+        if (Number.isNaN(marks)) marks = 0;
+        altAnswers = parseAlt(4);
+      } else {
+        correct = parts[2] || '';
+        marks = asInt(parts[3]);
+        altAnswers = parseAlt(4);
+        if (Number.isNaN(marks)) marks = 1;
+      }
+    }
+
+    const row = { label, fieldType, options, correct, marks, altAnswers };
+
+    if (['text', 'heading', 'label'].includes(fieldType) && !label) return null;
+    if (fieldType === 'fixed' && !label && !String(correct).trim()) return null;
+    return row;
+  }
+
+
+  function parseSectionBSpec(raw) {
+    const lines = parseLines(raw);
+    let layout = '';
+    let title = '';
+    let startIndex = 0;
+
+    if (lines.length) {
+      const header = parseSectionBHeader(lines[0]);
+      if (header && (header.layout || header.title)) {
+        layout = header.layout || '';
+        title = header.title || '';
+        startIndex = 1;
+      }
+
+      if (!title && lines[startIndex]) {
+        const maybeTitle = parseSectionBHeader(lines[startIndex]);
+        if (maybeTitle && !maybeTitle.layout && maybeTitle.title) {
+          title = maybeTitle.title;
+          startIndex += 1;
+        }
+      }
+    }
+
+    const rows = [];
+    for (const line of lines.slice(startIndex)) {
+      const parsed = parseSectionBRowLine(line);
+      if (!parsed) continue;
+      if (parsed.__header) {
+        if (!layout && parsed.layout) layout = parsed.layout;
+        if (!title && parsed.title) title = parsed.title;
+        continue;
+      }
+      rows.push(parsed);
+    }
+
+    return { layout, title, rows };
+  }
+
+function serializeSectionBRow(row = {}) {
+    const label = String(row.label || '').trim();
     const fieldType = String(row.fieldType || 'text').toLowerCase();
-    const options = Array.isArray(row.options) ? row.options.join(',') : '';
+    const options = Array.isArray(row.options) ? row.options.map(opt => String(opt).trim()).filter(Boolean).join(',') : '';
     const correct = row.correct ?? '';
-    const marks = Number(row.marks || 1);
-    const alt = Array.isArray(row.altAnswers) ? row.altAnswers.join(',') : '';
-    return `${label} || ${fieldType} || ${options} || ${correct} || ${marks} || ${alt}`;
+    const marks = Number(row.marks || 0);
+    const alt = Array.isArray(row.altAnswers) ? row.altAnswers.map(v => String(v).trim()).filter(Boolean).join(',') : '';
+
+    if (['text', 'heading', 'label'].includes(fieldType)) {
+      return `text|${label}`;
+    }
+    if (['fixed', 'display'].includes(fieldType)) {
+      return `fixed|${label}|${String(correct).trim()}`;
+    }
+    if (fieldType === 'total') {
+      return `total|${label}|${String(correct).trim()}`;
+    }
+    if (['dropdown', 'mcq', 'yesno', 'radio'].includes(fieldType)) {
+      return `row|${label}|${fieldType}|${options}|${String(correct).trim()}|${marks}${alt ? `|${alt}` : ''}`;
+    }
+    return `row|${label}|${fieldType}|${options}|${String(correct).trim()}|${marks}${alt ? `|${alt}` : ''}`;
+  }
+
+  function buildSectionBTextareaValue(specOrQuestion) {
+    const spec = specOrQuestion && Array.isArray(specOrQuestion.rows)
+      ? specOrQuestion
+      : {
+          layout: String(specOrQuestion?.sectionBLayout || '').trim(),
+          title: String(specOrQuestion?.sectionBTitle || '').trim(),
+          rows: Array.isArray(specOrQuestion?.sectionBRows) ? specOrQuestion.sectionBRows : []
+        };
+
+    const lines = [];
+    if (spec.layout || spec.title) {
+      lines.push(spec.title ? `${spec.layout || 'calcTable'}|${spec.title}` : (spec.layout || 'calcTable'));
+    }
+    (Array.isArray(spec.rows) ? spec.rows : []).forEach(row => lines.push(serializeSectionBRow(row)));
+    return lines.join('\n');
   }
 
   function parseSectionBRows(raw) {
-    return parseLines(raw).map(line => {
-      const parts = String(line || '').split('||').map(s => s.trim());
-      const label = parts[0] || '';
-      const fieldType = (parts[1] || 'text').toLowerCase();
-      const isChoice = isSectionBChoiceType(fieldType);
-
-      let options = [];
-      let correct = '';
-      let marks = 1;
-      let altAnswers = [];
-
-      if (isChoice) {
-        options = parts[2] ? parts[2].split(/[,;]/).map(s => s.trim()).filter(Boolean) : [];
-        correct = parts[3] || '';
-        marks = Number(parts[4] || 1);
-        altAnswers = parts[5]
-          ? parts[5].split(/[,|]/).map(s => normalizeText(s)).filter(Boolean)
-          : [];
-      } else {
-        const hasExplicitBlankOptions = parts.length >= 4 && parts[2] === '';
-        if (hasExplicitBlankOptions) {
-          correct = parts[3] || '';
-          marks = Number(parts[4] || 1);
-          altAnswers = parts[5]
-            ? parts[5].split(/[,|]/).map(s => normalizeText(s)).filter(Boolean)
-            : [];
-        } else {
-          correct = parts[2] || '';
-          marks = Number(parts[3] || 1);
-          altAnswers = parts[4]
-            ? parts[4].split(/[,|]/).map(s => normalizeText(s)).filter(Boolean)
-            : [];
-        }
-      }
-
-      return { label, fieldType, options, correct, marks, altAnswers };
-    }).filter(r => r.label);
+    return parseSectionBSpec(raw).rows;
   }
 
   function normalizeComparable(value) {
@@ -1509,77 +1789,144 @@
     `;
   }
 
-  function generateSectionBHtmlFromRows(rows) {
-    const safeRows = Array.isArray(rows) ? rows : [];
+
+  
+  function generateSectionBHtmlFromRows(rows, options = {}) {
+    const safeRows = Array.isArray(rows)
+      ? rows.map(coerceSectionBRow).filter(Boolean)
+      : [];
+    const layout = normalizeText(options.layout || '');
+    const title = String(options.title || '').trim();
     if (!safeRows.length) return '';
 
-    return `
-      <table class="sb-inline-table">
-        <thead>
+    const renderInput = (row, idx) => {
+      const label = row.label || `Field ${idx + 1}`;
+      const type = String(row.fieldType || 'text').toLowerCase();
+      const marks = Number(row.marks || 0);
+      const alt = Array.isArray(row.altAnswers) && row.altAnswers.length ? row.altAnswers.join(',') : '';
+      const optionList = Array.isArray(row.options) ? row.options : [];
+      const answer = String(row.correct ?? '').trim();
+
+      if (['dropdown', 'mcq', 'yesno'].includes(type)) {
+        const opts = optionList.length
+          ? optionList
+          : (type === 'yesno' ? ['Yes', 'No'] : (answer ? [answer] : ['Option 1', 'Option 2']));
+        return `
           <tr>
-            <th style="width:46%;">Item</th>
-            <th>Answer</th>
+            <td>${esc(label)}</td>
+            <td>
+              <select data-answer="${esc(answer)}" data-marks="${marks}" data-alt="${esc(alt)}">
+                <option value="">Select</option>
+                ${opts.map(opt => `<option value="${esc(opt)}">${esc(opt)}</option>`).join('')}
+              </select>
+            </td>
           </tr>
-        </thead>
-        <tbody>
-          ${safeRows.map((row, idx) => {
-            const label = row.label || `Field ${idx + 1}`;
-            const type = String(row.fieldType || 'text').toLowerCase();
-            const marks = Number(row.marks || 1);
-            const alt = Array.isArray(row.altAnswers) && row.altAnswers.length ? row.altAnswers.join(',') : '';
-            const options = Array.isArray(row.options) ? row.options : [];
-            const answer = String(row.correct ?? '').trim();
-            const isChoice = ['dropdown', 'mcq', 'yesno', 'radio'].includes(type);
+        `;
+      }
 
-            if (isChoice) {
-              const optionList = options.length ? options : (type === 'yesno' ? ['Yes', 'No'] : (answer ? [answer] : ['Option 1', 'Option 2']));
-              return `
-                <tr>
-                  <td>${esc(label)}</td>
-                  <td>
-                    <select data-answer="${esc(answer)}" data-marks="${marks}" data-alt="${esc(alt)}">
-                      <option value="">Select</option>
-                      ${optionList.map(opt => `<option value="${esc(opt)}">${esc(opt)}</option>`).join('')}
-                    </select>
-                  </td>
-                </tr>
-              `;
-            }
+      if (type === 'number' || type === 'input' || type === 'amount' || type === 'currency') {
+        return `
+          <tr>
+            <td>${esc(label)}</td>
+            <td>
+              <input type="number" step="any" data-answer="${esc(answer)}" data-marks="${marks}" data-alt="${esc(alt)}" placeholder="Enter answer">
+            </td>
+          </tr>
+        `;
+      }
 
-            if (type === 'number') {
-              return `
-                <tr>
-                  <td>${esc(label)}</td>
-                  <td>
-                    <input type="number" step="any" data-answer="${esc(answer)}" data-marks="${marks}" data-alt="${esc(alt)}" placeholder="Enter answer">
-                  </td>
-                </tr>
-              `;
-            }
+      return `
+        <tr>
+          <td>${esc(label)}</td>
+          <td>
+            <input type="text" data-answer="${esc(answer)}" data-marks="${marks}" data-alt="${esc(alt)}" placeholder="Enter answer">
+          </td>
+        </tr>
+      `;
+    };
 
-            return `
-              <tr>
-                <td>${esc(label)}</td>
-                <td>
-                  <input type="text" data-answer="${esc(answer)}" data-marks="${marks}" data-alt="${esc(alt)}" placeholder="Enter answer">
-                </td>
-              </tr>
-            `;
-          }).join('')}
-        </tbody>
-      </table>
+    const bodyRows = safeRows.map((row, idx) => {
+      const type = String(row.fieldType || 'text').toLowerCase();
+      const label = String(row.label || '').trim();
+      const answer = String(row.correct ?? '').trim();
+
+      if (['text', 'heading', 'label'].includes(type) && label) {
+        return `
+          <tr>
+            <td colspan="2" class="sb-block" style="background:#f8fafc;font-weight:800;color:#111827;">${esc(label)}</td>
+          </tr>
+        `;
+      }
+
+      if (['fixed', 'display'].includes(type)) {
+        return `
+          <tr>
+            <td>${esc(label)}</td>
+            <td style="font-weight:700;text-align:right;">${esc(answer)}</td>
+          </tr>
+        `;
+      }
+
+      if (type === 'total') {
+        return renderInput({ ...row, fieldType: 'number' }, idx);
+      }
+
+      return renderInput(row, idx);
+    }).join('');
+
+    const table = layout === 'calctable'
+      ? `
+        <table class="sb-inline-table sb-calc-table">
+          <tbody>${bodyRows}</tbody>
+        </table>
+      `
+      : `
+        <table class="sb-inline-table">
+          <thead>
+            <tr>
+              <th style="width:46%;">Item</th>
+              <th>Answer</th>
+            </tr>
+          </thead>
+          <tbody>${bodyRows}</tbody>
+        </table>
+      `;
+
+    return `
+      ${title ? `<div class="sb-table-title">${esc(title)}</div>` : ''}
+      ${table}
     `;
   }
 
+
   function getSectionBHtmlSource(q) {
-    const html = String(q?.sectionBHtml || '').trim();
-    if (html) return html;
+    const raw = String(q?.sectionBHtml || '').trim();
+    const rawSpecRegex = /(?:^|\n)\s*(?:type\s*=\s*calcTable|layout\s*=\s*calcTable|calcTable\b|calctable\b|statementTable\b|statementtable\b|cashflowtable\b|cash flow table\b|row\s*\||fixed\s*\||text\s*\||heading\s*\||label\s*\||total\s*\||grandtotal\s*\|)/i;
+
+    if (raw) {
+      if (/<table|<div|<tr|<td|<th/i.test(raw) && !rawSpecRegex.test(raw)) return raw;
+
+      const spec = parseSectionBSpec(raw);
+      if (spec && (spec.rows.length || spec.layout || spec.title)) {
+        return generateSectionBHtmlFromRows(spec.rows, { layout: spec.layout, title: spec.title });
+      }
+    }
+
     const rows = Array.isArray(q?.sectionBRows) ? q.sectionBRows : [];
-    return generateSectionBHtmlFromRows(rows);
+    const layout = String(q?.sectionBLayout || '').trim();
+    const title = String(q?.sectionBTitle || '').trim();
+    return generateSectionBHtmlFromRows(rows, { layout, title });
   }
 
-  function sectionBAnswerFields(root = document) {
-    return [...root.querySelectorAll('.sb-custom-html [data-answer], .sb-custom-html [data-sb-answer]')];
+function sectionBAnswerFields(root = document) {
+    const selector = '[data-answer], [data-sb-answer]';
+    const scopedSelector = '.sb-custom-html [data-answer], .sb-custom-html [data-sb-answer]';
+    const rootIsAnswerArea = root !== document && root.matches && root.matches('.sb-custom-html');
+    const scoped = rootIsAnswerArea
+      ? [...root.querySelectorAll(selector)]
+      : [...root.querySelectorAll(scopedSelector)];
+    if (scoped.length || root === document || rootIsAnswerArea) return scoped;
+    return [...root.querySelectorAll(selector)];
   }
 
   function normalizeFieldValue(field) {
@@ -1608,9 +1955,27 @@
     const arr = Array.isArray(values) ? values : [];
     fields.forEach((field, idx) => {
       const value = arr[idx] ?? '';
-      if (field.type === 'checkbox') field.checked = String(value) === 'true';
-      else if (field.type === 'radio') field.checked = String(field.value) === String(value);
-      else field.value = value;
+      if (field.type === 'checkbox') {
+        field.checked = String(value) === 'true';
+        if (field.checked) field.setAttribute('checked', 'checked');
+        else field.removeAttribute('checked');
+      } else if (field.type === 'radio') {
+        field.checked = String(field.value) === String(value);
+        if (field.checked) field.setAttribute('checked', 'checked');
+        else field.removeAttribute('checked');
+      } else if (field.tagName === 'SELECT') {
+        field.value = value;
+        [...field.options].forEach(option => {
+          if (String(option.value) === String(value)) option.setAttribute('selected', 'selected');
+          else option.removeAttribute('selected');
+        });
+      } else if (field.tagName === 'TEXTAREA') {
+        field.value = value;
+        field.textContent = value;
+      } else {
+        field.value = value;
+        field.setAttribute('value', value);
+      }
     });
   }
 
@@ -2028,12 +2393,16 @@ https://ucarecdn.com/..." ></textarea>
         <div class="small">Upload one or more screenshots above or paste CDN URLs here.</div>
 
         <label>Section B Answer Fields</label>
-        <textarea id="sbRowsX" placeholder="Revenue || number || || 8400 || 1 ||
-Cost of sales || number || || 4600 || 1 ||
-Gross profit || number || || 3800 || 1 ||
-Control || dropdown || Yes,No || Yes || 1 ||
-Year End || yesno || Yes,No || Yes || 1 ||"></textarea>
-        <div class="small">Format: Label || type || options || correct answer || marks || alternatives. Types: text, fib, number, dropdown, mcq, yesno.</div>
+        <textarea id="sbRowsX" placeholder="calcTable|Calculation of goodwill
+row|Fair value of consideration transferred|input|660000|1
+row|Fair value of NCI at acquisition|input|165000|1
+text|Less Net acquisition-date fair value of identifiable assets acquired and liabilities assumed
+row|Share capital|fixed|600000
+row|Retained earnings at acquisition|fixed|95000
+row|Fair value adjustment at acquisition|fixed|70000
+total|Total|(765000)
+row|Goodwill|input|60000|3"></textarea>
+        <div class="small">Supported formats: calcTable|Title (hidden from the raw layout), row|Label|input|Answer|Marks, fixed|Label|Value, total|Label|Value, text|Heading text, and Label || type || options || correct answer || marks || alternatives.</div>
 
         <label>Section B Marking Scheme</label>
         <textarea id="sbSchemeX" placeholder="Auto-mark each row by its marks; allow alternative answers if provided."></textarea>
@@ -2054,6 +2423,7 @@ Year End || yesno || Yes,No || Yes || 1 ||"></textarea>
     el.dynamicFields.innerHTML = '';
     updateUploadcarePanelVisibility();
   }
+
   function currentDynamicValues() {
     const type = el.questionType.value;
 
@@ -2080,12 +2450,17 @@ Year End || yesno || Yes,No || Yes || 1 ||"></textarea>
 
     if (type === 'sectionb') {
       const imageUrls = parseLines(document.getElementById('sbImageUrlsX')?.value || '');
-      const generatedRows = parseSectionBRows(document.getElementById('sbRowsX')?.value || '');
+      const spec = parseSectionBSpec(document.getElementById('sbRowsX')?.value || '');
       const scheme = document.getElementById('sbSchemeX')?.value.trim() || '';
       const allImages = [state.questionImageUrl, ...imageUrls].filter(Boolean);
+      const sectionBRows = spec.rows;
+      const sectionBLayout = spec.layout || '';
+      const sectionBTitle = spec.title || '';
       return {
-        sectionBRows: generatedRows,
-        sectionBHtml: generateSectionBHtmlFromRows(generatedRows),
+        sectionBRows,
+        sectionBLayout,
+        sectionBTitle,
+        sectionBHtml: generateSectionBHtmlFromRows(sectionBRows, { layout: sectionBLayout, title: sectionBTitle }),
         sectionBImageUrls: [...new Set(allImages)],
         sectionBMarkingScheme: scheme,
         imageUrls: [...new Set(allImages)],
@@ -2101,6 +2476,7 @@ Year End || yesno || Yes,No || Yes || 1 ||"></textarea>
 
     return {};
   }
+
   async function savePaper() {
     if (state.role !== 'admin') return setStatus(el.paperStatus, 'Access denied.', true);
     try {
@@ -2183,6 +2559,7 @@ Year End || yesno || Yes,No || Yes || 1 ||"></textarea>
     populateQuestionEditor(q);
   };
 
+
   async function saveQuestion() {
     if (state.role !== 'admin') return setStatus(el.questionStatus, 'Access denied.', true);
 
@@ -2234,11 +2611,17 @@ Year End || yesno || Yes,No || Yes || 1 ||"></textarea>
       } else if (type === 'sectionb') {
         const rows = Array.isArray(dyn.sectionBRows) ? dyn.sectionBRows : [];
         const sectionBImageUrls = Array.isArray(dyn.sectionBImageUrls) ? dyn.sectionBImageUrls.filter(Boolean) : [];
+        const sectionBLayout = String(dyn.sectionBLayout || '').trim();
+        const sectionBTitle = String(dyn.sectionBTitle || '').trim();
+
         if (!rows.length) throw new Error('Section B needs at least one answer field.');
         if (!sectionBImageUrls.length && !imageUrl) throw new Error('Section B needs at least one exhibit screenshot.');
         correct = rows.map(r => r.correct);
         if (!marks || Number.isNaN(marks) || marks <= 0) {
           marks = rows.reduce((sum, row) => sum + Number(row.marks || 1), 0);
+        }
+        if (sectionBLayout === 'calcTable' && !sectionBTitle && !mainQuestion) {
+          throw new Error('Calculation table needs a title.');
         }
       }
 
@@ -2248,20 +2631,29 @@ Year End || yesno || Yes,No || Yes || 1 ||"></textarea>
             : (imageUrl ? [imageUrl] : []))
         : [];
 
+      const sectionBLayout = type === 'sectionb' ? String(dyn.sectionBLayout || '').trim() : '';
+      const sectionBTitle = type === 'sectionb' ? String(dyn.sectionBTitle || '').trim() : '';
+
       const payload = {
         paperId,
         paperCode: paper.code || '',
         paperTitle: paper.title || '',
         section,
         type,
-        mainQuestion,
-        question: type === 'sectionb' ? (question || 'Section B') : question,
+        mainQuestion: type === 'sectionb' && sectionBLayout === 'calcTable'
+          ? (sectionBTitle || mainQuestion || question || '')
+          : mainQuestion,
+        question: type === 'sectionb'
+          ? (sectionBLayout === 'calcTable' ? '' : (question || 'Section B'))
+          : question,
         imageUrl: type === 'sectionb' ? (sectionBImageUrls[0] || imageUrl || '') : imageUrl,
         imageUrls: type === 'sectionb' ? sectionBImageUrls : undefined,
         imageAlt,
         ...dyn,
+        sectionBLayout: type === 'sectionb' ? sectionBLayout : undefined,
+        sectionBTitle: type === 'sectionb' ? (sectionBLayout === 'calcTable' ? (sectionBTitle || mainQuestion || '') : sectionBTitle) : undefined,
         sectionBRows: type === 'sectionb' ? dyn.sectionBRows : undefined,
-        sectionBHtml: type === 'sectionb' ? generateSectionBHtmlFromRows(dyn.sectionBRows || []) : undefined,
+        sectionBHtml: type === 'sectionb' ? generateSectionBHtmlFromRows(dyn.sectionBRows || [], { layout: sectionBLayout, title: sectionBTitle || mainQuestion || '' }) : undefined,
         sectionBMarkingScheme: type === 'sectionb' ? (dyn.sectionBMarkingScheme || '') : undefined,
         correct,
         explanation,
@@ -2291,6 +2683,7 @@ Year End || yesno || Yes,No || Yes || 1 ||"></textarea>
       setStatus(el.questionStatus, err.message, true);
     }
   }
+
   function updateTimerDisplay() {
     if (!state.examActive || state.examLocked) return;
     const secondsLeft = Math.max(0, Math.ceil((state.timerEndAt - Date.now()) / 1000));
@@ -2697,14 +3090,19 @@ Year End || yesno || Yes,No || Yes || 1 ||"></textarea>
       answer = [...document.querySelectorAll('.multiBox:checked')].map(c => Number(c.value));
     } else if (type === 'fill') {
       const inputs = [...document.querySelectorAll('.fib-input')];
+      if (!inputs.length) return;
       answer = inputs.map(i => i.value.trim());
     } else if (type === 'sectionb') {
-      answer = collectSectionBAnswers();
+      const fields = sectionBAnswerFields(document);
+      if (!fields.length) return;
+      answer = fields.map(field => normalizeFieldValue(field));
     } else if (type === 'dropdown') {
       const node = document.getElementById('dropAnswer');
+      if (!node) return;
       answer = node && node.value !== '' ? Number(node.value) : null;
     } else {
       const node = document.getElementById('freeAnswer');
+      if (!node) return;
       answer = node ? node.value.trim() : '';
     }
 
